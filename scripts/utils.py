@@ -19,6 +19,7 @@ TXT2IMG_AVAILABLE_ARGS = (
     "cfg",
     "facefix",
     "style",
+    "negative"
 )
 
 DEFAULT_VALUES = {
@@ -29,6 +30,7 @@ DEFAULT_VALUES = {
     "cfg": 5.0,
     "facefix": "0",
     "style": "default",
+    "negative": ""
 }
 
 AVAILABLE_ASPECT_RATIO_DICT = ("16:9", "4:3", "1:1", "9:16", "3:4")

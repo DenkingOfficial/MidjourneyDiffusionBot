@@ -5,6 +5,7 @@ from PIL import Image
 import base64
 import scripts.utils as utils
 from pyrogram.types import InputMediaPhoto
+import json
 
 SD_URL = "http://192.168.0.66:7860"
 
@@ -23,20 +24,6 @@ def upscale_fast(client, call, queue):
     args = call.data.split("/")
     args.pop(0)
     username, image_job_id, index, user_id = args
-    reply = call.message.reply_animation(
-        animation="./static/noise.gif",
-        caption=f"{job_name} image\n"
-        f"\n"
-        f"Position in queue: {str(len(queue))} "
-        f"{'(Pending)' if len(queue) > 0 else ''}\n"
-        f"\n"
-        f"Original Image by [@{username}]"
-        f"(tg://user?id={user_id})",
-    )
-    utils.add_to_queue(
-        client, reply, queue, job_id, job_name, "", username, user_id, True
-    )
-
     main_folder = f"./output/txt2img/{username}/"
     for folder in os.listdir(main_folder):
         if image_job_id in folder:
@@ -48,6 +35,31 @@ def upscale_fast(client, call, queue):
             file_path += file
             filename = file.replace(".png", "").replace(image_job_id, job_id)
             break
+    with open(f"{main_folder}/gen_info.json") as json_file:
+        payload = json.load(json_file)
+    with open(f"{main_folder}/user_info.json") as json_file:
+        user_info = json.load(json_file)
+    reply = call.message.reply_animation(
+        animation="./static/noise.gif",
+        caption=f"{job_name} image using prompt:\n**{user_info['orig_prompt']}**\n"
+        f"\n"
+        f"Position in queue: {str(len(queue))} "
+        f"{'(Pending)' if len(queue) > 0 else ''}\n"
+        f"\n"
+        f"by [@{call.from_user.username}]"
+        f"(tg://user?id={call.from_user.id})\n",
+    )
+    utils.add_to_queue(
+        client,
+        reply,
+        queue,
+        job_id,
+        job_name,
+        user_info["orig_prompt"],
+        call.from_user.username,
+        call.from_user.id,
+    )
+
     image = Image.open(file_path)
     image = img2b64(image)
 
@@ -69,9 +81,19 @@ def upscale_fast(client, call, queue):
     reply.edit_media(
         media=InputMediaPhoto(
             media=f"{upscaled_image_path}",
-            caption=f"Upscaled image\n"
-            f"**Original Image by [@{username}]"
-            f"(tg://user?id={user_id})**",
+            caption="Upscaled image\n"
+            + "\n"
+            + f"Prompt: **{user_info['orig_prompt']}**\n"
+            + (
+                f"Negative Prompt: **{user_info['negative_prompt']}**\n"
+                if user_info["negative_prompt"]
+                else ""
+            )
+            + "\n"
+            + f"**Upscaled by [@{call.from_user.username}]"
+            + f"(tg://user?id={call.from_user.id})**\n"
+            + f"**Original Image by [@{username}]"
+            + f"(tg://user?id={user_id})**",
         )
     )
     queue.pop(0)

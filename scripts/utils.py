@@ -19,7 +19,7 @@ TXT2IMG_AVAILABLE_ARGS = (
     "cfg",
     "facefix",
     "style",
-    "negative"
+    "negative",
 )
 
 DEFAULT_VALUES = {
@@ -30,7 +30,7 @@ DEFAULT_VALUES = {
     "cfg": 5.0,
     "facefix": "0",
     "style": "default",
-    "negative": ""
+    "negative": "",
 }
 
 AVAILABLE_ASPECT_RATIO_DICT = ("16:9", "4:3", "1:1", "9:16", "3:4")
@@ -153,15 +153,10 @@ def generate_job_id(length):
     return job_id
 
 
-def add_to_queue(
-    client, reply, queue, job_id, job_name, prompt, username, user_id, is_upscale
-):
+def add_to_queue(client, reply, queue, job_id, job_name, prompt, username, user_id):
     queue.append(job_id)
     first_string = f"{job_name} image using prompt:\n**{prompt}**\n"
     last_string = f"by [@{username}]"
-    if is_upscale:
-        first_string = f"{job_name} image\n"
-        last_string = f"Original Image by [@{username}]"
     job_index = queue.index(job_id)
     while queue[0] != job_id:
         prev_index = job_index

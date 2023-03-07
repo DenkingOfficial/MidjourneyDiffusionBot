@@ -41,21 +41,18 @@ def imagine(client, message):
 
 def regenerate_process(client: Client, call: CallbackQuery):
     client.answer_callback_query(call.id)
-    call.message.reply_text(call.data)
     global queue
     regenerate(client, call, queue)
 
 
 def upscale_fast_process(client: Client, call: CallbackQuery):
     client.answer_callback_query(call.id)
-    call.message.reply_text(call.data)
     global queue
     upscale_fast(client, call, queue)
 
 
 def variations_process(client: Client, call: CallbackQuery):
     client.answer_callback_query(call.id)
-    call.message.reply_text(call.data)
     global queue
     variations(client, call, queue)
 

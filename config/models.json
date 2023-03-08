@@ -1,6 +1,6 @@
 {
     "illuminati_v1.1": {
-        "model_path": "Misc\\illuminatiDiffusionV1_v11.safetensors [cae1bee30e]",
+        "path": "Misc\\illuminatiDiffusionV1_v11.safetensors [cae1bee30e]",
         "styles":{
             "default": {
                 "prompt_addition": "",
@@ -25,7 +25,7 @@
         }
     },
     "original_sd_1.5": {
-        "model_path": "Original SD\\model-v1-5.ckpt [cc6cb27103]",
+        "path": "Original SD\\model-v1-5.ckpt [cc6cb27103]",
         "styles":{
             "default": {
                 "prompt_addition": ", ultra detailed, 4k, beautiful, realistic photo",
@@ -50,7 +50,7 @@
         }
     },
     "original_sd_2.1": {
-        "model_path": "Original SD\\model-v2-1-768-ema.ckpt [ad2a33c361]",
+        "path": "Original SD\\model-v2-1-768-ema.ckpt [ad2a33c361]",
         "styles": {
             "default": {
                 "prompt_addition": ", mjrnaest, ultra detailed, 4k, beautiful, realistic photo",

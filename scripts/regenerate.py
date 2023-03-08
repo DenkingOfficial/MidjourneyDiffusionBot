@@ -5,9 +5,7 @@ import io
 from PIL import Image, PngImagePlugin
 import base64
 import scripts.utils as utils
-from types import SimpleNamespace
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
-from scripts.get_settings import get_settings
 
 SD_URL = "http://192.168.0.66:7860"
 

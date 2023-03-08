@@ -7,7 +7,7 @@ import scripts.utils as utils
 from pyrogram.types import InputMediaPhoto
 import json
 
-SD_URL = "http://192.168.0.66:7860"
+from scripts.consts import SD_URL
 
 
 def img2b64(image):

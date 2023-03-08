@@ -7,7 +7,7 @@ import base64
 import scripts.utils as utils
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
 
-SD_URL = "http://192.168.0.66:7860"
+from scripts.consts import SD_URL
 
 
 def regenerate(client, call, queue):

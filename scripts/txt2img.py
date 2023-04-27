@@ -21,6 +21,7 @@ TXT2IMG_AVAILABLE_ARGS = (
     "facefix",
     "style",
     "negative",
+    "hr",
 )
 
 ASPECT_RATIO_DICT = {
@@ -73,6 +74,13 @@ def txt2img(client, message, queue):
     override_settings = {}
     override_settings["sd_model_checkpoint"] = model_path
     override_payload = {"override_settings": override_settings}
+    alwayson_scripts = {}
+    if args.hr == "1":
+        alwayson_scripts["Tiled VAE"] = {
+            "args": ["True", "False", "False", "False", "False", 1024, 96]
+        }
+    alwayson_payload = {"alwayson_scripts": alwayson_scripts}
+
     payload = (
         {
             "prompt": args.gen_prompt + styles[args.style]["prompt_addition"],
@@ -81,14 +89,22 @@ def txt2img(client, message, queue):
             "cfg_scale": float(args.cfg),
             "sampler_index": "Euler",
             "steps": 10,
-            "batch_size": int(args.count),
+            "batch_size": int(args.count) if args.hr != "1" else 1,
+            "n_iter": int(args.count) if args.hr == "1" else 1,
             "seed": int(args.seed),
             "restore_faces": args.facefix == "1",
+            "enable_hr": args.hr == "1",
+            "hr_upscaler": "4x-UltraSharp",
+            "denoising_strength": 0.25,
         }
         | ASPECT_RATIO_DICT[args.ar]
         | override_payload
+        | alwayson_payload
     )
+    print(f"Payload: {payload}")
     r = requests.post(url=f"{SD_URL}/sdapi/v1/txt2img", json=payload).json()
+    print(f"Username: {message.from_user.username}")
+    print(f'Prompt: {payload["prompt"]}')
     list_of_seeds = utils.get_json_from_info(r)["all_seeds"]
     filename = utils.clean_prompt(args.prompt)
     filename += f"--{job_id}"

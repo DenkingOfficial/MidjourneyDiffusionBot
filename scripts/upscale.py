@@ -4,7 +4,9 @@ from io import BytesIO
 from PIL import Image
 import base64
 import scripts.utils as utils
-from pyrogram.types import InputMediaPhoto
+from pyrogram import errors as pyrogram_errors
+from pyrogram.types import InputMediaPhoto, InputMediaDocument
+
 import json
 
 from scripts.consts import SD_URL
@@ -66,7 +68,7 @@ def upscale_fast(client, call, queue):
     payload = {
         "resize_mode": 0,
         "upscaling_resize": 4,
-        "upscaler_1": "4x_foolhardy_Remacri (1)",
+        "upscaler_1": "4x_foolhardy_Remacri",
         "image": image,
     }
     upscaled_image_path = f"{main_folder}/{filename}.jpg"
@@ -77,23 +79,42 @@ def upscale_fast(client, call, queue):
         filename += "--upscaled"
         upscaled_image = Image.open(BytesIO(base64.b64decode(r["image"])))
         upscaled_image.save(upscaled_image_path)
-
-    reply.edit_media(
-        media=InputMediaPhoto(
-            media=f"{upscaled_image_path}",
-            caption="Upscaled image\n"
-            + "\n"
-            + f"Prompt: **{user_info['orig_prompt']}**\n"
-            + (
-                f"Negative Prompt: **{user_info['negative_prompt']}**\n"
-                if user_info["negative_prompt"]
-                else ""
+    try:
+        reply.edit_media(
+            media=InputMediaPhoto(
+                media=f"{upscaled_image_path}",
+                caption="Upscaled image\n"
+                + "\n"
+                + f"Prompt: **{user_info['orig_prompt']}**\n"
+                + (
+                    f"Negative Prompt: **{user_info['negative_prompt']}**\n"
+                    if user_info["negative_prompt"]
+                    else ""
+                )
+                + "\n"
+                + f"**Upscaled by [@{call.from_user.username}]"
+                + f"(tg://user?id={call.from_user.id})**\n"
+                + f"**Original Image by [@{username}]"
+                + f"(tg://user?id={user_id})**",
             )
-            + "\n"
-            + f"**Upscaled by [@{call.from_user.username}]"
-            + f"(tg://user?id={call.from_user.id})**\n"
-            + f"**Original Image by [@{username}]"
-            + f"(tg://user?id={user_id})**",
         )
-    )
+    except pyrogram_errors.bad_request_400.PhotoInvalidDimensions:
+        reply.edit_media(
+            media=InputMediaDocument(
+                media=f"{upscaled_image_path}",
+                caption="Upscaled image\n"
+                + "\n"
+                + f"Prompt: **{user_info['orig_prompt']}**\n"
+                + (
+                    f"Negative Prompt: **{user_info['negative_prompt']}**\n"
+                    if user_info["negative_prompt"]
+                    else ""
+                )
+                + "\n"
+                + f"**Upscaled by [@{call.from_user.username}]"
+                + f"(tg://user?id={call.from_user.id})**\n"
+                + f"**Original Image by [@{username}]"
+                + f"(tg://user?id={user_id})**",
+            )
+        )
     queue.pop(0)

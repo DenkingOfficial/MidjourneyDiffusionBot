@@ -27,6 +27,8 @@ def variations(client, call, queue):
     payload["seed"] = int(seed)
     payload["subseed_strength"] = 0.1
     payload["batch_size"] = 4
+    payload["enable_hr"] = False
+    payload["alwayson_scripts"] = {}
     reply = call.message.reply_animation(
         animation="./static/noise.gif",
         caption=f"{job_name} image using prompt:\n**{user_info['orig_prompt']}**\n"

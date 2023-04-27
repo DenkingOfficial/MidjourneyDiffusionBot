@@ -20,6 +20,7 @@ TXT2IMG_AVAILABLE_ARGS = (
     "facefix",
     "style",
     "negative",
+    "hr",
 )
 
 DEFAULT_VALUES = {
@@ -31,6 +32,7 @@ DEFAULT_VALUES = {
     "facefix": "0",
     "style": "default",
     "negative": "",
+    "hr": "0",
 }
 
 AVAILABLE_ASPECT_RATIO_DICT = ("16:9", "4:3", "1:1", "9:16", "3:4")
@@ -99,6 +101,7 @@ def check_args(args, available_args):
     try:
         assert not sorted(set(args).difference(available_args))
         assert args["prompt"]
+        assert int(args["hr"]) == 0 or int(args["hr"]) == 1
         assert args["ar"] in AVAILABLE_ASPECT_RATIO_DICT
         assert int(args["count"]) >= 1 and int(args["count"]) <= 4
         assert int(args["seed"]) == -1 or (

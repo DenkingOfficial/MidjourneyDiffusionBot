@@ -16,7 +16,7 @@ app = Client(
     "MidjourneyDiffusion",
     api_id=secrets["API_ID"],
     api_hash=secrets["API_HASH"],
-    bot_token=secrets["TOKEN"],
+    bot_token=secrets["TOKEN"]
 )
 
 
@@ -29,7 +29,7 @@ async def start(client, message):
         "генерирую картинки по описанию.\n"
         "\n"
         "Для генерации картинок напиши команду\n"
-        "`/imagine prompt:Описание картинки`\n",
+        "`/imagine Описание картинки`\n",
     )
 
 

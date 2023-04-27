@@ -4,12 +4,12 @@ import json
 import io
 from PIL import Image, PngImagePlugin
 import base64
-import scripts.utils as utils
+import utils as utils
 from types import SimpleNamespace
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
-from scripts.get_settings import get_settings
+from get_settings import get_settings
 
-from scripts.consts import SD_URL
+from consts import SD_URL
 
 TXT2IMG_AVAILABLE_ARGS = (
     "prompt",

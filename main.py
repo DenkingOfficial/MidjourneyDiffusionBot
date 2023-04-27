@@ -1,12 +1,12 @@
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery
 from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
-from scripts.get_secrets import read_secrets
-from scripts.txt2img import txt2img
-from scripts.upscale import upscale_fast
-from scripts.variations import variations
-from scripts.regenerate import regenerate
-import scripts.utils as utils
+from source.get_secrets import read_secrets
+from source.txt2img import txt2img
+from source.upscale import upscale_fast
+from source.variations import variations
+from source.regenerate import regenerate
+import source.utils as utils
 
 secrets = read_secrets()
 

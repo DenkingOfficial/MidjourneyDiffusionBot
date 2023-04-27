@@ -3,4 +3,5 @@ secrets.json
 *.session
 *.journal
 output/
-scripts/__pycache__/
+source/__pycache__/
+venv/

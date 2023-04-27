@@ -1,0 +1,14 @@
+{
+    "model_1":{
+        "art": "Model 1, Art",
+        "realistic":"Model 1, Realistic"
+    },
+    "model_2":{
+        "art": "Model 2, Art",
+        "realistic":"Model 2, Realistic"
+    },
+    "model_3":{
+        "art": "Model 3, Art",
+        "realistic":"Model 3, Realistic"
+    }
+}

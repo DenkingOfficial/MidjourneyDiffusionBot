@@ -3,13 +3,13 @@ import requests
 from io import BytesIO
 from PIL import Image
 import base64
-import scripts.utils as utils
+import utils as utils
 from pyrogram import errors as pyrogram_errors
 from pyrogram.types import InputMediaPhoto, InputMediaDocument
 
 import json
 
-from scripts.consts import SD_URL
+from consts import SD_URL
 
 
 def img2b64(image):

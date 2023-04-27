@@ -6,10 +6,8 @@ class JsonReader:
     def read_json_file(filename, model=None) -> dict:
         try:
             with open(filename, mode="r", encoding="UTF-8") as f:
-                if model is None:
-                    return json.loads(f.read())
-                else:
-                    return json.loads(f.read())[model]
+                data = json.loads(f.read())
+                return data if model is None else data[model]
         except FileNotFoundError:
             raise FileNotFoundError("JSON File not found")
 

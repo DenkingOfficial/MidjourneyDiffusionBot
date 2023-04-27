@@ -11,8 +11,9 @@ DEFAULT_VALUES = {
     "seed": -1,
     "cfg": 5.0,
     "facefix": "0",
-    "style": "realistic",
+    "style": "default",
     "negative": "",
+    "hr": "0",
 }
 
 AVAILABLE_ASPECT_RATIO = ("16:9", "4:3", "1:1", "9:16", "3:4")
@@ -31,4 +32,5 @@ TXT2IMG_AVAILABLE_ARGS = (
     "facefix",
     "style",
     "negative",
+    "hr",
 )

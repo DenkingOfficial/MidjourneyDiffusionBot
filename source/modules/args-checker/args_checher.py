@@ -1,16 +1,5 @@
 MAX_SEED_VALUE = 9999999999999999999
 
-DEFAULT_VALUES = {
-    "ar": "1:1",
-    "count": 4,
-    "model": "illuminati_v1.1",
-    "seed": -1,
-    "cfg": 5.0,
-    "facefix": "0",
-    "style": "realistic",
-    "negative": "",
-}
-
 AVAILABLE_ASPECT_RATIO = ("16:9", "4:3", "1:1", "9:16", "3:4")
 
 AVAILABLE_STYLES = ("default", "realistic", "art", "pixel-art")
@@ -27,6 +16,7 @@ TXT2IMG_AVAILABLE_ARGS = (
     "facefix",
     "style",
     "negative",
+    "hr",
 )
 
 
@@ -39,12 +29,11 @@ def check_args(args, args_dict, ar_dict, styles_dict, models_dict):
             and args["style"] in styles_dict
             and args["model"] in models_dict
         )
-        assert int(args["count"]) >= 1 and int(args["count"]) <= 4
-        assert int(args["seed"]) == -1 or (
-            int(args["seed"]) >= 1 and int(args["seed"]) <= MAX_SEED_VALUE
-        )
-        assert float(args["cfg"]) >= 1.0 and float(args["cfg"]) <= 15.0
-        assert int(args["facefix"]) == 0 or int(args["facefix"]) == 1
+        assert 1 <= int(args["count"]) <= 4
+        assert int(args["seed"]) == -1 or (1 <= int(args["seed"]) <= MAX_SEED_VALUE)
+        assert 1.0 <= float(args["cfg"]) <= 15.0
+        assert int(args["facefix"]) in [0, 1]
+        assert int(args["hr"]) in [0, 1]
     except AssertionError:
         return False
     except KeyError:
@@ -63,6 +52,7 @@ if __name__ == "__main__":
         "facefix": "0",
         "style": "art",
         "negative": "",
+        "hr": "1",
     }
     result = check_args(
         args,

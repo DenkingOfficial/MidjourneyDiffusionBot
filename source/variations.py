@@ -3,7 +3,7 @@ import requests
 from io import BytesIO
 from PIL import Image, PngImagePlugin
 import base64
-import utils as utils
+import utils
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
 import json
 from consts import SD_URL

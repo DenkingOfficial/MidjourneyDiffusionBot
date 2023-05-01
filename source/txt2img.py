@@ -4,7 +4,8 @@ import json
 import io
 from PIL import Image, PngImagePlugin
 import base64
-import utils as utils
+import utils
+
 from types import SimpleNamespace
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
 from get_settings import get_settings

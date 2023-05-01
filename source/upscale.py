@@ -3,7 +3,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 import base64
-import utils as utils
+import utils
 from pyrogram import errors as pyrogram_errors
 from pyrogram.types import InputMediaPhoto, InputMediaDocument
 

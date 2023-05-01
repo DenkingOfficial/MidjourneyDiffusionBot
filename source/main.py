@@ -1,12 +1,12 @@
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery
 from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
-from source.get_secrets import read_secrets
-from source.txt2img import txt2img
-from source.upscale import upscale_fast
-from source.variations import variations
-from source.regenerate import regenerate
-import source.utils as utils
+from get_secrets import read_secrets
+from txt2img import txt2img
+from upscale import upscale_fast
+from variations import variations
+from regenerate import regenerate
+import utils
 
 secrets = read_secrets()
 
@@ -16,7 +16,7 @@ app = Client(
     "MidjourneyDiffusion",
     api_id=secrets["API_ID"],
     api_hash=secrets["API_HASH"],
-    bot_token=secrets["TOKEN"]
+    bot_token=secrets["TOKEN"],
 )
 
 

@@ -1,13 +1,13 @@
 {
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
+  "python.linting.flake8CategorySeverity.E": "Warning",
   "python.linting.flake8Args": [
     "--ignore=E501,E501"
   ],
   "flake8.args": [
     "--ignore=E203,E501"
   ],
-
   "editor.formatOnSave": true,
   "python.formatting.provider": "black"
 }

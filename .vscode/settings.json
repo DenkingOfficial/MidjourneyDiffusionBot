@@ -1,4 +1,5 @@
 {
+  "python.analysis.typeCheckingMode": "basic", // strict
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
   "python.linting.flake8CategorySeverity.E": "Warning",

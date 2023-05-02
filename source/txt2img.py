@@ -9,7 +9,9 @@ import utils
 from types import SimpleNamespace
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
 from get_settings import get_settings
+from dependencies import DependencyContainer
 
+from app_reply import HELP
 from consts import SD_URL
 
 TXT2IMG_AVAILABLE_ARGS = (
@@ -34,13 +36,14 @@ ASPECT_RATIO_DICT = {
 }
 
 
-def txt2img(client, message, queue):
+def txt2img(client, message, deps: DependencyContainer):
+    queue = deps.queue
     args = utils.get_generation_args(message)
     try:
         assert args
         assert utils.check_args(args, TXT2IMG_AVAILABLE_ARGS)
     except AssertionError:
-        message.reply_text(utils.HELP_TEXT)
+        message.reply_text(HELP)
         return
 
     args = SimpleNamespace(**args)

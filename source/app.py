@@ -6,12 +6,13 @@ from txt2img import txt2img
 from upscale import upscale_fast
 from variations import variations
 from regenerate import regenerate
-import utils
+
+from dependencies import DependencyContainer
 
 from app_reply import GREETINGS, HELP
 
 
-def create_app(queue: list) -> Client:
+def create_app(deps: DependencyContainer) -> Client:
     secrets = read_secrets()
     app = Client(
         "MidjourneyDiffusion",
@@ -30,7 +31,7 @@ def create_app(queue: list) -> Client:
 
     @app.on_message(filters.command(["imagine"]))
     def imagine(client, message):
-        txt2img(client, message, queue)
+        txt2img(client, message, deps)
 
     @app.on_message(filters.command(["help"]))
     async def help(client, message):
@@ -38,15 +39,15 @@ def create_app(queue: list) -> Client:
 
     async def regenerate_process(client: Client, call: CallbackQuery):
         await client.answer_callback_query(call.id)
-        regenerate(client, call, queue)
+        regenerate(client, call, deps)
 
     async def upscale_fast_process(client: Client, call: CallbackQuery):
         await client.answer_callback_query(call.id)
-        upscale_fast(client, call, queue)
+        upscale_fast(client, call, deps)
 
     async def variations_process(client: Client, call: CallbackQuery):
         await client.answer_callback_query(call.id)
-        variations(client, call, queue)
+        variations(client, call, deps)
 
     async def call_data(data):
         async def filter_data(self, __, call: CallbackQuery):

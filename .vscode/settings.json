@@ -1,14 +1,11 @@
 {
   "python.analysis.typeCheckingMode": "basic", // strict
+  "python.formatting.provider": "black",
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
   "python.linting.flake8CategorySeverity.E": "Warning",
-  "python.linting.flake8Args": [
-    "--ignore=E501,E501"
-  ],
-  "flake8.args": [
-    "--ignore=E203,E501"
-  ],
-  "editor.formatOnSave": true,
-  "python.formatting.provider": "black"
+  "python.linting.flake8Args": ["--ignore=E501,E501"],
+  "flake8.args": ["--ignore=E203,E501"],
+  "editor.defaultFormatter": "ms-python.black-formatter",
+  "editor.formatOnSave": true
 }

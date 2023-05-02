@@ -1,0 +1,15 @@
+name: Dev Task
+description: File a dev task
+title: "[DEV]: "
+labels: ["dev", "task"]
+assignees:
+  - Roccowen
+  - DenkingOfficial
+body:
+  - type: textarea
+    id: what-do
+    attributes:
+      label: Что сделать?
+      placeholder: Описание задания
+    validations:
+      required: true

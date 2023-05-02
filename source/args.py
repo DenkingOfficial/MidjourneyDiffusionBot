@@ -24,11 +24,9 @@ TXT2IMG_AVAILABLE_ARGS = [
     "hr",
 ]
 
-AVAILABLE_ASPECT_RATIO_DICT = ["16:9", "4:3", "1:1", "9:16", "3:4"]
+AVAILABLE_STYLES_LIST = ["default", "realistic", "art", "pixel-art"]
 
-AVAILABLE_STYLES_DICT = ["default", "realistic", "art", "pixel-art"]
-
-AVAILABLE_MODELS_DICT = ["illuminati_v1.1", "original_sd_1.5", "original_sd_2.1"]
+AVAILABLE_MODELS_LIST = ["illuminati_v1.1", "original_sd_1.5", "original_sd_2.1"]
 
 DEFAULT_VALUES = {
     "ar": "1:1",
@@ -47,15 +45,13 @@ def command_to_args(
     command: str, available_params: list[str]
 ) -> Union[dict[str, Any], None]:
     try:
-        prompt, *args = re.split(" --|--| —|—", command)
-        cmd, *prompt = prompt.split(" ", 1)
-        args = map(lambda arg: re.split(" ", arg, 1), args)
-        if len(prompt) == 0:
+        args = re.split(" --|--| —|—", command.replace("/imagine", "--prompt"))
+        args = DEFAULT_VALUES | {
+            arg.split(" ", 1)[0]: arg.split(" ", 1)[1] for arg in args if " " in arg
+        }
+        if not check_args(args, available_params):
             return None
-        formatted_args = {"prompt": prompt, **dict(args)}
-        if not check_args(formatted_args, available_params):
-            return None
-        return DEFAULT_VALUES | formatted_args
+        return args
     except ValueError:
         return None
 
@@ -63,17 +59,17 @@ def command_to_args(
 def check_args(args: dict, available_args: list[str]):
     try:
         assert not sorted(set(args).difference(available_args))
-        assert args["prompt"]
-        assert int(args["hr"]) == 0 or int(args["hr"]) == 1
-        assert args["ar"] in AVAILABLE_ASPECT_RATIO_DICT
-        assert int(args["count"]) >= 1 and int(args["count"]) <= 4
-        assert int(args["seed"]) == -1 or (
-            int(args["seed"]) >= 1 and int(args["seed"]) <= MAX_SEED_VALUE
+        assert 1 <= int(args["count"]) <= 4
+        assert int(args["seed"]) == -1 or (1 <= int(args["seed"]) <= MAX_SEED_VALUE)
+        assert 1.0 <= float(args["cfg"]) <= 15.0
+        assert int(args["facefix"]) in [0, 1]
+        assert int(args["hr"]) in [0, 1]
+        assert (
+            args["prompt"]
+            and args["ar"] in ASPECT_RATIO_DICT.keys()
+            and args["style"] in AVAILABLE_STYLES_LIST
+            and args["model"] in AVAILABLE_MODELS_LIST
         )
-        assert float(args["cfg"]) >= 1.0 and float(args["cfg"]) <= 15.0
-        assert int(args["facefix"]) == 0 or int(args["facefix"]) == 1
-        assert args["style"] in AVAILABLE_STYLES_DICT
-        assert args["model"] in AVAILABLE_MODELS_DICT
     except AssertionError:
         return False
     except KeyError:
@@ -82,5 +78,6 @@ def check_args(args: dict, available_args: list[str]):
 
 
 if __name__ == "__main__":
-    raw_imagine_prompt = "/imagine Владимир Путин, лсд, стиль Ван Гога, портрет 3/4, глитч, очки, цвета --facefix 1"
-    command_to_args(raw_imagine_prompt, TXT2IMG_AVAILABLE_ARGS)
+    raw_imagine_prompt = "/imagine Владимир Путин, лсд, стиль Ван Гога, портрет 3/4, глитч, очки, цвета --facefix 0"
+    parsed_args = command_to_args(raw_imagine_prompt, TXT2IMG_AVAILABLE_ARGS)
+    print(parsed_args)

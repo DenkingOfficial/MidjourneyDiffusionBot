@@ -5,7 +5,8 @@ import io
 from PIL import Image, PngImagePlugin
 import base64
 import utils
-
+from pyrogram.client import Client
+from pyrogram.types import Message
 from types import SimpleNamespace
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
 from get_settings import get_settings
@@ -35,8 +36,24 @@ ASPECT_RATIO_DICT = {
     "3:4": {"width": 576, "height": 768},
 }
 
+NOISE = "./static/noise.gif"
 
-def txt2img(client, message, deps: DependencyContainer):
+
+def default_animated_reply(message, job_name: str, prompt: str, position: int):
+    return message.reply_animation(
+        animation=NOISE,
+        caption=f"{job_name} image using prompt:\n**{prompt}**\n"
+        f"\n"
+        f"Position in queue: {str(position)} "
+        f"{'(Pending)' if position > 0 else ''}\n"
+        f"\n"
+        f"by [@{message.from_user.username}]"
+        f"(tg://user?id={message.from_user.id})",
+        quote=True,
+    )
+
+
+def txt2img(client: Client, message: Message, deps: DependencyContainer):
     queue = deps.queue
     args = utils.get_generation_args(message)
     try:
@@ -49,17 +66,7 @@ def txt2img(client, message, deps: DependencyContainer):
     args = SimpleNamespace(**args)
     job_id = utils.generate_job_id(16)
     job_name = "Generating"
-    reply = message.reply_animation(
-        animation="./static/noise.gif",
-        caption=f"{job_name} image using prompt:\n**{args.prompt}**\n"
-        f"\n"
-        f"Position in queue: {str(len(queue))} "
-        f"{'(Pending)' if len(queue) > 0 else ''}\n"
-        f"\n"
-        f"by [@{message.from_user.username}]"
-        f"(tg://user?id={message.from_user.id})",
-        quote=True,
-    )
+    reply = default_animated_reply(message, job_name, args.prompt, len(queue))
     utils.add_to_queue(
         client,
         reply,

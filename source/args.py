@@ -1,9 +1,17 @@
 import re
-from pyrogram.types import Message
+from typing import Any, Union
 
 MAX_SEED_VALUE = 9999999999999999999
 
-TXT2IMG_AVAILABLE_ARGS = (
+ASPECT_RATIO_DICT = {
+    "16:9": {"width": 1024, "height": 576},
+    "4:3": {"width": 768, "height": 576},
+    "1:1": {"width": 768, "height": 768},
+    "9:16": {"width": 576, "height": 1024},
+    "3:4": {"width": 576, "height": 768},
+}
+
+TXT2IMG_AVAILABLE_ARGS = [
     "prompt",
     "ar",
     "count",
@@ -14,7 +22,13 @@ TXT2IMG_AVAILABLE_ARGS = (
     "style",
     "negative",
     "hr",
-)
+]
+
+AVAILABLE_ASPECT_RATIO_DICT = ["16:9", "4:3", "1:1", "9:16", "3:4"]
+
+AVAILABLE_STYLES_DICT = ["default", "realistic", "art", "pixel-art"]
+
+AVAILABLE_MODELS_DICT = ["illuminati_v1.1", "original_sd_1.5", "original_sd_2.1"]
 
 DEFAULT_VALUES = {
     "ar": "1:1",
@@ -28,28 +42,25 @@ DEFAULT_VALUES = {
     "hr": "0",
 }
 
-AVAILABLE_ASPECT_RATIO_DICT = ("16:9", "4:3", "1:1", "9:16", "3:4")
 
-AVAILABLE_STYLES_DICT = ("default", "realistic", "art", "pixel-art")
-
-AVAILABLE_MODELS_DICT = ("illuminati_v1.1", "original_sd_1.5", "original_sd_2.1")
-
-
-def get_generation_args(command: Message):
-    args = re.split(" --|--| —|—", command.text)
-    args[0] = args[0].split(" ", 1)
-    if len(args[0]) == 1:
-        return False
-    args[0][0] = "prompt"
+def command_to_args(
+    command: str, available_params: list[str]
+) -> Union[dict[str, Any], None]:
     try:
-        args[1:] = map(lambda param: re.split(" ", param, 1), args[1:])
-        args = dict(args)
+        prompt, *args = re.split(" --|--| —|—", command)
+        cmd, *prompt = prompt.split(" ", 1)
+        args = map(lambda arg: re.split(" ", arg, 1), args)
+        if len(prompt) == 0:
+            return None
+        formatted_args = {"prompt": prompt, **dict(args)}
+        if not check_args(formatted_args, available_params):
+            return None
+        return DEFAULT_VALUES | formatted_args
     except ValueError:
-        return False
-    return DEFAULT_VALUES | args
+        return None
 
 
-def check_args(args, available_args):
+def check_args(args: dict, available_args: list[str]):
     try:
         assert not sorted(set(args).difference(available_args))
         assert args["prompt"]
@@ -68,3 +79,8 @@ def check_args(args, available_args):
     except KeyError:
         pass
     return True
+
+
+if __name__ == "__main__":
+    raw_imagine_prompt = "/imagine Владимир Путин, лсд, стиль Ван Гога, портрет 3/4, глитч, очки, цвета --facefix 1"
+    command_to_args(raw_imagine_prompt, TXT2IMG_AVAILABLE_ARGS)

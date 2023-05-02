@@ -1,4 +1,5 @@
 import os
+from typing import Any
 import requests
 import json
 import io
@@ -14,29 +15,10 @@ from dependencies import DependencyContainer
 
 from app_reply import HELP
 from consts import SD_URL
-
-TXT2IMG_AVAILABLE_ARGS = (
-    "prompt",
-    "ar",
-    "count",
-    "model",
-    "seed",
-    "cfg",
-    "facefix",
-    "style",
-    "negative",
-    "hr",
-)
-
-ASPECT_RATIO_DICT = {
-    "16:9": {"width": 1024, "height": 576},
-    "4:3": {"width": 768, "height": 576},
-    "1:1": {"width": 768, "height": 768},
-    "9:16": {"width": 576, "height": 1024},
-    "3:4": {"width": 576, "height": 768},
-}
+from args import command_to_args, check_args, TXT2IMG_AVAILABLE_ARGS, ASPECT_RATIO_DICT
 
 NOISE = "./static/noise.gif"
+UPSCALER = "4x-UltraSharp"
 
 
 def default_animated_reply(message, job_name: str, prompt: str, position: int):
@@ -53,14 +35,34 @@ def default_animated_reply(message, job_name: str, prompt: str, position: int):
     )
 
 
-def txt2img(client: Client, message: Message, deps: DependencyContainer):
+def create_payload(args: dict[str, Any]):
+    payload = (
+        {
+            "prompt": args.gen_prompt + styles[args.style]["prompt_addition"],
+            "negative_prompt": styles[args.style]["negative_prompt"]
+            + (f", {args.gen_negative}" if args.negative else ""),
+            "cfg_scale": float(args.cfg),
+            "sampler_index": "Euler",
+            "steps": 10,
+            "batch_size": int(args.count) if args.hr != "1" else 1,
+            "n_iter": int(args.count) if args.hr == "1" else 1,
+            "seed": int(args.seed),
+            "restore_faces": args.facefix == "1",
+            "enable_hr": args.hr == "1",
+            "hr_upscaler": UPSCALER,
+            "denoising_strength": 0.25,
+        }
+        | ASPECT_RATIO_DICT[args.ar]
+        | override_payload
+        | alwayson_payload
+    )
+
+
+async def txt2img(client: Client, message: Message, deps: DependencyContainer):
     queue = deps.queue
-    args = utils.get_generation_args(message)
-    try:
-        assert args
-        assert utils.check_args(args, TXT2IMG_AVAILABLE_ARGS)
-    except AssertionError:
-        message.reply_text(HELP)
+    args = command_to_args(message.text, TXT2IMG_AVAILABLE_ARGS)
+    if not args:
+        await message.reply_text(HELP)
         return
 
     args = SimpleNamespace(**args)
@@ -105,7 +107,7 @@ def txt2img(client: Client, message: Message, deps: DependencyContainer):
             "seed": int(args.seed),
             "restore_faces": args.facefix == "1",
             "enable_hr": args.hr == "1",
-            "hr_upscaler": "4x-UltraSharp",
+            "hr_upscaler": UPSCALER,
             "denoising_strength": 0.25,
         }
         | ASPECT_RATIO_DICT[args.ar]

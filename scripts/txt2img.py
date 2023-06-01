@@ -77,7 +77,7 @@ def txt2img(client, message, queue):
     alwayson_scripts = {}
     if args.hr == "1":
         alwayson_scripts["Tiled VAE"] = {
-            "args": ["True", "False", "False", "False", "False", 1024, 96]
+            "args": ["True", 1024, 96, "False", "False", "False", "False"]
         }
     alwayson_payload = {"alwayson_scripts": alwayson_scripts}
 

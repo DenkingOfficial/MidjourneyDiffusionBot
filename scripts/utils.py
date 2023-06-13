@@ -2,6 +2,7 @@ import re
 from PIL import Image
 from math import sqrt, floor, ceil
 from googletrans import Translator
+from pyrogram import errors as pyrogram_errors
 import json
 import random
 import string
@@ -156,7 +157,7 @@ def generate_job_id(length):
     return job_id
 
 
-def add_to_queue(client, reply, queue, job_id, job_name, prompt, username, user_id):
+def add_to_queue(reply, queue, job_id, job_name, prompt, username, user_id):
     queue.append(job_id)
     first_string = f"{job_name} image using prompt:\n**{prompt}**\n"
     last_string = f"by [@{username}]"
@@ -165,14 +166,17 @@ def add_to_queue(client, reply, queue, job_id, job_name, prompt, username, user_
         prev_index = job_index
         job_index = queue.index(job_id)
         if prev_index != job_index:
-            reply.edit_text(
-                text=f"{first_string}"
-                f"\n"
-                f"Position in queue: {job_index} (Pending)\n"
-                f"\n"
-                f"{last_string}"
-                f"(tg://user?id={user_id})"
-            )
+            try:
+                reply.edit_text(
+                    text=f"{first_string}"
+                    f"\n"
+                    f"Position in queue: {job_index} (Pending)\n"
+                    f"\n"
+                    f"{last_string}"
+                    f"(tg://user?id={user_id})"
+                )
+            except pyrogram_errors.bad_request_400.MessageNotModified:
+                pass
     reply.edit_text(
         text=f"{first_string}"
         f"\n"
@@ -181,3 +185,22 @@ def add_to_queue(client, reply, queue, job_id, job_name, prompt, username, user_
         f"{last_string}"
         f"(tg://user?id={user_id})"
     )
+
+
+def reply_template(
+    job_name, queue, user_info, variations=False, regenerate=False, upscale=False
+):
+    position = str(len(queue))
+    status = "(Pending)" if len(queue) > 0 else ""
+    caption = (
+        f"{job_name} image using prompt:\n**{user_info['orig_prompt']}**\n\n"
+        f"Position in queue: {position} {status}\n\n"
+        f"by [@{user_info['username']}](tg://user?id={user_info['user_id']})"
+    )
+    reply = {
+        "animation": "./static/noise.gif",
+        "caption": caption,
+    }
+    if not (regenerate and variations and upscale):
+        reply["quote"] = True
+    return reply

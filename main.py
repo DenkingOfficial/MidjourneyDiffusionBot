@@ -2,11 +2,9 @@ from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery
 from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
 from scripts.get_secrets import read_secrets
-from scripts.txt2img import txt2img
-from scripts.upscale import upscale_fast
-from scripts.variations import variations
-from scripts.regenerate import regenerate
 import scripts.utils as utils
+from scripts.txt2img import Txt2Img
+from scripts.upscale import Upscale
 
 secrets = read_secrets()
 
@@ -16,7 +14,7 @@ app = Client(
     "MidjourneyDiffusion",
     api_id=secrets["API_ID"],
     api_hash=secrets["API_HASH"],
-    bot_token=secrets["TOKEN"]
+    bot_token=secrets["TOKEN"],
 )
 
 
@@ -36,25 +34,29 @@ async def start(client, message):
 @app.on_message(filters.command(["imagine"]))
 def imagine(client, message):
     global queue
-    txt2img(client, message, queue)
-
-
-def regenerate_process(client: Client, call: CallbackQuery):
-    client.answer_callback_query(call.id)
-    global queue
-    regenerate(client, call, queue)
-
-
-def upscale_fast_process(client: Client, call: CallbackQuery):
-    client.answer_callback_query(call.id)
-    global queue
-    upscale_fast(client, call, queue)
+    t2i = Txt2Img(queue, message)
+    t2i.process()
 
 
 def variations_process(client: Client, call: CallbackQuery):
     client.answer_callback_query(call.id)
     global queue
-    variations(client, call, queue)
+    var = Txt2Img(queue, variations=True)
+    var.process(call=call)
+
+
+def regenerate_process(client: Client, call: CallbackQuery):
+    client.answer_callback_query(call.id)
+    global queue
+    regen = Txt2Img(queue)
+    regen.process(call=call)
+
+
+def upscale_fast_process(client: Client, call: CallbackQuery):
+    client.answer_callback_query(call.id)
+    global queue
+    ups = Upscale(queue)
+    ups.process(call=call)
 
 
 def call_data(data):

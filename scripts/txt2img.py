@@ -8,12 +8,11 @@ import scripts.utils as utils
 from types import SimpleNamespace
 from pyrogram.types import (
     InputMediaPhoto,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
     Message,
 )
 from scripts.get_settings import get_settings
 from scripts.consts import SD_URL, TXT2IMG_AVAILABLE_ARGS, ASPECT_RATIO_DICT
+from scripts.inline_keyboards import inline_keyboards
 
 
 class Txt2Img:
@@ -140,103 +139,6 @@ class Txt2Img:
             image.save(f"{path}/{filename}.png", pnginfo=pnginfo)
         return images_list
 
-    def _compose_inline_keyboard(self, call=None):
-        if call and self.variations:
-            return InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [InlineKeyboardButton(text="Upscale an image:", callback_data="_")],
-                    [
-                        InlineKeyboardButton(
-                            text=str(i + 1),
-                            callback_data=f"UF/{self.user_info['username']}/{self.job_id}/{i}",
-                        )
-                        for i in range(self.user_info["images_count"])
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="🔄 Regenerate variations",
-                            callback_data=f"V/{self.user_info['username']}/{self.user_info['orig_image_job_id']}/{self.user_info['seed']}",
-                        )
-                    ],
-                ]
-            )
-        elif call:
-            return InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [InlineKeyboardButton(text="Upscale an image:", callback_data="_")],
-                    [
-                        InlineKeyboardButton(
-                            text=str(i + 1),
-                            callback_data=f"UF/{self.user_info['username']}/{self.job_id}/{i}",
-                        )
-                        for i in range(self.user_info["images_count"])
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="Generate variations:", callback_data="_"
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text=str(i + 1),
-                            callback_data=f"V/{self.user_info['username']}/{self.job_id}/{self.user_info['seeds'][i]}",
-                        )
-                        for i in range(self.user_info["images_count"])
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="🔄 Regenerate (Count)",
-                            callback_data="_",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text=str(i + 1),
-                            callback_data=f"RG/{self.user_info['username']}/{self.job_id}/{str(i + 1)}",
-                        )
-                        for i in range(4)
-                    ],
-                ]
-            )
-        else:
-            return InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [InlineKeyboardButton(text="Upscale an image:", callback_data="_")],
-                    [
-                        InlineKeyboardButton(
-                            text=str(i + 1),
-                            callback_data=f"UF/{self.user_info['username']}/{self.job_id}/{i}",
-                        )
-                        for i in range(self.user_info["images_count"])
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="Generate variations:", callback_data="_"
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text=str(i + 1),
-                            callback_data=f"V/{self.user_info['username']}/{self.job_id}/{self.user_info['seeds'][i]}",
-                        )
-                        for i in range(self.user_info["images_count"])
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text="🔄 Regenerate (Count)",
-                            callback_data="_",
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text=str(i + 1),
-                            callback_data=f"RG/{self.user_info['username']}/{self.job_id}/{str(i + 1)}",
-                        )
-                        for i in range(4)
-                    ],
-                ]
-            )
-
     def _present_results(self, path, reply, call=None):
         caption = (
             f"Prompt: **{self.user_info['orig_prompt']}**\n"
@@ -257,7 +159,7 @@ class Txt2Img:
             media=f"{path}/{self.user_info['clean_prompt']}-{self.job_id}-grid.jpg",
             caption=caption,
         )
-        reply_markup = self._compose_inline_keyboard(call)
+        reply_markup = inline_keyboards(self.user_info, self.job_id, self.variations)
         reply.edit_media(media=media, reply_markup=reply_markup)
         self.queue.pop(0)
 

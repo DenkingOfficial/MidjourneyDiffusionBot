@@ -1,4 +1,4 @@
-SD_URL = "http://192.168.0.66:7860"
+SD_URL = ""
 
 TXT2IMG_AVAILABLE_ARGS = (
     "prompt",

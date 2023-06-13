@@ -1,14 +1,14 @@
 import re
 from PIL import Image
 from math import sqrt, floor, ceil
-from googletrans import Translator
 from pyrogram import errors as pyrogram_errors
+from yandexfreetranslate import YandexFreeTranslate
+from langdetect import detect
 import json
 import random
 import string
 
-translator = Translator()
-
+translator = YandexFreeTranslate(api="ios")
 MAX_SEED_VALUE = 9999999999999999999
 
 TXT2IMG_AVAILABLE_ARGS = (
@@ -131,14 +131,10 @@ def create_image_grid(imgs):
 
 
 def translate_prompt(prompt):
-    if contains_cyrillic(prompt):
-        return translator.translate(prompt, dest="en", src="ru").text
+    if detect(prompt) != 'en':
+        return translator.translate(text=prompt, target="en")
     else:
         return prompt
-
-
-def contains_cyrillic(prompt, alphabet=set("абвгдеёжзийклмнопрстуфхцчшщъыьэюя")):
-    return not alphabet.isdisjoint(prompt.lower())
 
 
 def clean_prompt(prompt):

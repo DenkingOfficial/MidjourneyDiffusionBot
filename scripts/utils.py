@@ -7,7 +7,6 @@ import json
 import random
 import string
 
-translator = YandexFreeTranslate()
 translator = YandexFreeTranslate(api="ios")
 MAX_SEED_VALUE = 9999999999999999999
 

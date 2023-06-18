@@ -5,7 +5,7 @@ from PIL import Image
 import base64
 import scripts.utils as utils
 from pyrogram import errors as pyrogram_errors
-from pyrogram.types import InputMediaPhoto, InputMediaDocument
+from pyrogram.types import InputMediaPhoto, InputMediaDocument, CallbackQuery
 
 import json
 
@@ -75,7 +75,7 @@ class Upscale:
             upscaled_image = Image.open(BytesIO(base64.b64decode(r["image"])))
             upscaled_image.save(self.upscaled_file_path)
 
-    def _present_results(self, reply, call=None):
+    def _present_results(self, reply, call: CallbackQuery = None):  # type: ignore
         try:
             reply.edit_media(
                 media=InputMediaPhoto(

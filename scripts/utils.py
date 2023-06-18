@@ -92,7 +92,7 @@ def get_generation_args(command):
     args[0][0] = "prompt"
     try:
         args[1:] = map(lambda param: re.split(" ", param, 1), args[1:])
-        args = dict(args)
+        args = dict(args)  # type: ignore
     except ValueError:
         return False
     return DEFAULT_VALUES | args

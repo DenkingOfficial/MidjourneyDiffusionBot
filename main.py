@@ -77,7 +77,7 @@ def upscale_fast_process(client: Client, call: CallbackQuery):
 
 def call_data(data):
     async def filter_data(self, __, call: CallbackQuery):
-        return self.data.split("/")[0] == call.data.split("/")[0]
+        return self.data.split("/")[0] == call.data.split("/")[0]  # type: ignore
 
     return filters.create(filter_data, data=data)
 

@@ -16,7 +16,7 @@ from scripts.inline_keyboards import inline_keyboards
 
 
 class Txt2Img:
-    def __init__(self, queue: list, message: Message = None, variations: bool = False):
+    def __init__(self, queue: list, message: Message = None, variations: bool = False):  # type: ignore
         self.message = message
         self.queue = queue
         self.variations = variations
@@ -30,7 +30,7 @@ class Txt2Img:
         if not args or not utils.check_args(args, TXT2IMG_AVAILABLE_ARGS):
             message.reply_text(utils.HELP_TEXT)
             return
-        return SimpleNamespace(**args)
+        return SimpleNamespace(**args)  # type: ignore
 
     def _compose_payload_and_user_info(self, args):
         args.gen_prompt, args.gen_negative = utils.translate_prompt(args.prompt), (
@@ -171,7 +171,7 @@ class Txt2Img:
         reply = (
             call.message.reply_animation(**reply_message)
             if call
-            else self.message.reply_animation(**reply_message)
+            else self.message.reply_animation(**reply_message)  # type: ignore
         )
         utils.add_to_queue(
             reply,

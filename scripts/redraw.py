@@ -1,6 +1,5 @@
 import base64
 import os
-import re
 from io import BytesIO
 from PIL import Image
 import requests

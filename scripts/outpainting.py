@@ -29,11 +29,15 @@ class Outpaint:
         command_pattern = r"/outpaint"
         dir_pattern = r"(--|—)direction\s+(\w+)"
         amount_pattern = r"(--|—)amount\s+(\d+)"
-        all_patterns = f"{command_pattern}|{dir_pattern}|{amount_pattern}"
+        guide_pattern = r"(--|—)guide((?:(?!--|—).)*)"
+        all_patterns = (
+            f"{command_pattern}|{dir_pattern}|{amount_pattern}|{guide_pattern}"
+        )
 
         # Match and extract flags and arguments
         direction_match = re.search(dir_pattern, text)
         amount_match = re.search(amount_pattern, text)
+        guide_match = re.search(guide_pattern, text)
 
         # Remove matched flags and arguments from text
         clean_text = re.sub(all_patterns, "", text)
@@ -50,7 +54,9 @@ class Outpaint:
         if not (1 <= amount <= 100):
             return False
 
-        return {"direction": direction, "amount": amount}
+        guide = guide_match.group(2).strip() if guide_match else ""
+
+        return {"direction": direction, "amount": amount, "guide": guide}
 
     @staticmethod
     def nearest_divisible_by_8(resolution):
@@ -79,10 +85,12 @@ class Outpaint:
         os.remove(image_path)
 
         parse_result = {"image": base64_img, **params}
-
-        return {
-            "prompt": "",
-            "negative_prompt": "(deformed, distorted, disfigured:1.3), poorly drawn...",
+        self.guide_prompt = parse_result["guide"]
+        payload = {
+            "prompt": utils.translate_prompt(parse_result["guide"])
+            if parse_result["guide"]
+            else "",
+            "negative_prompt": "(deformed, distorted, disfigured:1.3), poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, (mutated hands and fingers:1.4), disconnected limbs, mutation, mutated, ugly, disgusting, blurry",
             "batch_size": 1,
             "steps": 30,
             "cfg_scale": 3,
@@ -120,6 +128,7 @@ class Outpaint:
                 },
             },
         }
+        return payload
 
     def _process_image(self, path, payload):
         r = requests.post(f"{SD_URL}/sdapi/v1/txt2img", json=payload).json()
@@ -130,7 +139,15 @@ class Outpaint:
     def _present_results(self, path, reply):
         processed_filename = f"{self.message.from_user.username}-{self.job_id}.png"
         file_path = os.path.join(path, processed_filename)
-        caption = f"Outpainted image\n\n**Outpainted by [@{self.message.from_user.username}](tg://user?id={self.message.from_user.id})**\n"
+        caption = (
+            "Outpainted image\n"
+            + (
+                f"Guidance prompt: **{self.guide_prompt}**\n"
+                if self.guide_prompt
+                else ""
+            )
+            + f"\n**Outpainted by [@{self.message.from_user.username}](tg://user?id={self.message.from_user.id})**\n"
+        )
 
         try:
             media = InputMediaPhoto(media=file_path, caption=caption)
@@ -150,10 +167,14 @@ class Outpaint:
             )
             return
 
-        reply_message = utils.reply_outpaint_template(self.queue, self.message)
+        reply_message = utils.reply_outpaint_template(
+            self.queue, self.message, self.guide_prompt
+        )
         reply = self.message.reply_animation(**reply_message)
 
-        utils.add_to_queue_outpaint(reply, self.queue, self.job_id, self.message)
+        utils.add_to_queue_outpaint(
+            reply, self.queue, self.job_id, self.message, self.guide_prompt
+        )
 
         if not os.path.exists(path):
             os.makedirs(path)

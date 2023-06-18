@@ -6,181 +6,200 @@ from PIL import Image, PngImagePlugin
 import base64
 import scripts.utils as utils
 from types import SimpleNamespace
-from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
-from scripts.get_settings import get_settings
-
-from scripts.consts import SD_URL
-
-TXT2IMG_AVAILABLE_ARGS = (
-    "prompt",
-    "ar",
-    "count",
-    "model",
-    "seed",
-    "cfg",
-    "facefix",
-    "style",
-    "negative",
-    "hr",
+from pyrogram.types import (
+    InputMediaPhoto,
+    Message,
 )
-
-ASPECT_RATIO_DICT = {
-    "16:9": {"width": 1024, "height": 576},
-    "4:3": {"width": 768, "height": 576},
-    "1:1": {"width": 768, "height": 768},
-    "9:16": {"width": 576, "height": 1024},
-    "3:4": {"width": 576, "height": 768},
-}
+from scripts.get_settings import get_settings
+from scripts.consts import SD_URL, TXT2IMG_AVAILABLE_ARGS, ASPECT_RATIO_DICT
+from scripts.inline_keyboards import inline_keyboards
 
 
-def txt2img(client, message, queue):
-    args = utils.get_generation_args(message)
-    try:
-        assert args
-        assert utils.check_args(args, TXT2IMG_AVAILABLE_ARGS)
-    except AssertionError:
-        message.reply_text(utils.HELP_TEXT)
-        return
+class Txt2Img:
+    def __init__(self, queue: list, message: Message = None, variations: bool = False):
+        self.message = message
+        self.queue = queue
+        self.variations = variations
+        self.job_name = "Generating" if not variations else "Generating variations for"
+        self.job_id = None
+        self.user_info = {}
 
-    args = SimpleNamespace(**args)
-    job_id = utils.generate_job_id(16)
-    job_name = "Generating"
-    reply = message.reply_animation(
-        animation="./static/noise.gif",
-        caption=f"{job_name} image using prompt:\n**{args.prompt}**\n"
-        f"\n"
-        f"Position in queue: {str(len(queue))} "
-        f"{'(Pending)' if len(queue) > 0 else ''}\n"
-        f"\n"
-        f"by [@{message.from_user.username}]"
-        f"(tg://user?id={message.from_user.id})",
-        quote=True,
-    )
-    utils.add_to_queue(
-        client,
-        reply,
-        queue,
-        job_id,
-        job_name,
-        args.prompt,
-        message.from_user.username,
-        message.from_user.id,
-    )
-    args.gen_prompt = utils.translate_prompt(args.prompt)
-    if args.negative:
-        args.gen_negative = utils.translate_prompt(args.negative)
-    model_path = get_settings(args.model)["model_path"]
-    styles = get_settings(args.model)["styles"]
-    override_settings = {}
-    override_settings["sd_model_checkpoint"] = model_path
-    override_payload = {"override_settings": override_settings}
-    alwayson_scripts = {}
-    if args.hr == "1":
-        alwayson_scripts["Tiled VAE"] = {
-            "args": ["True", 1024, 96, "False", "False", "False", "False"]
+    @staticmethod
+    def _get_args_dict(message):
+        args = utils.get_generation_args(message)
+        if not args or not utils.check_args(args, TXT2IMG_AVAILABLE_ARGS):
+            message.reply_text(utils.HELP_TEXT)
+            return
+        return SimpleNamespace(**args)
+
+    def _compose_payload_and_user_info(self, args):
+        args = self._get_args_dict(self.message)
+        args.gen_prompt, args.gen_negative = utils.translate_prompt(args.prompt), (
+            utils.translate_prompt(args.negative) if args.negative else None
+        )
+        model_path = get_settings(args.model)["model_path"]
+        styles = get_settings(args.model)["styles"]
+        override_payload = {"override_settings": {"sd_model_checkpoint": model_path}}
+        alwayson_payload = {
+            "alwayson_scripts": {
+                "Tiled VAE": {
+                    "args": ["True", 1024, 96, "False", "False", "False", "False"]
+                }
+            }
+            if args.hr == "1"
+            else {}
         }
-    alwayson_payload = {"alwayson_scripts": alwayson_scripts}
-
-    payload = (
-        {
-            "prompt": args.gen_prompt + styles[args.style]["prompt_addition"],
-            "negative_prompt": styles[args.style]["negative_prompt"]
-            + (f", {args.gen_negative}" if args.negative else ""),
-            "cfg_scale": float(args.cfg),
-            "sampler_index": "Euler",
-            "steps": 10,
-            "batch_size": int(args.count) if args.hr != "1" else 1,
-            "n_iter": int(args.count) if args.hr == "1" else 1,
-            "seed": int(args.seed),
-            "restore_faces": args.facefix == "1",
-            "enable_hr": args.hr == "1",
-            "hr_upscaler": "4x-UltraSharp",
-            "denoising_strength": 0.25,
+        payload = (
+            {
+                "prompt": args.gen_prompt + styles[args.style]["prompt_addition"],
+                "negative_prompt": styles[args.style]["negative_prompt"]
+                + (f", {args.gen_negative}" if args.negative else ""),
+                "cfg_scale": float(args.cfg),
+                "sampler_index": "DPM++ 2M SDE",
+                "steps": 10,
+                "batch_size": int(args.count) if args.hr != "1" else 1,
+                "n_iter": int(args.count) if args.hr == "1" else 1,
+                "seed": int(args.seed),
+                "restore_faces": args.facefix == "1",
+                "enable_hr": args.hr == "1",
+                "hr_upscaler": "4x-UltraSharp",
+                "denoising_strength": 0.25,
+            }
+            | ASPECT_RATIO_DICT[args.ar]
+            | override_payload
+            | alwayson_payload
+        )
+        self.user_info = {
+            "user_id": self.message.from_user.id,
+            "username": self.message.from_user.username,
+            "orig_prompt": args.prompt,
+            "negative_prompt": args.negative,
+            "clean_prompt": utils.clean_prompt(args.prompt),
         }
-        | ASPECT_RATIO_DICT[args.ar]
-        | override_payload
-        | alwayson_payload
-    )
-    print(f"Payload: {payload}")
-    r = requests.post(url=f"{SD_URL}/sdapi/v1/txt2img", json=payload).json()
-    print(f"Username: {message.from_user.username}")
-    print(f'Prompt: {payload["prompt"]}')
-    list_of_seeds = utils.get_json_from_info(r)["all_seeds"]
-    filename = utils.clean_prompt(args.prompt)
-    filename += f"--{job_id}"
-    path = f"./output/txt2img/{message.from_user.username}/{filename}"
-    isExists = os.path.exists(path)
-    if not isExists:
-        os.makedirs(path)
+        print(self.user_info)
+        print(payload)
+        return payload
 
-    images_list = []
-    for index, img in enumerate(r["images"]):
-        image = Image.open(io.BytesIO(base64.b64decode(img.split(",", 1)[0])))
-        images_list.append(image)
-        word = f"{index}-{filename}-{list_of_seeds[index]}"
-        png_payload = {"image": "data:image/png;base64," + img}
-        response2 = requests.post(url=f"{SD_URL}/sdapi/v1/png-info", json=png_payload)
-        pnginfo = PngImagePlugin.PngInfo()
-        pnginfo.add_text("parameters", response2.json().get("info"))
-        image.save(f"{path}/{word}.png", pnginfo=pnginfo)
-    grid = utils.create_image_grid(images_list)
-    grid.save(f"{path}/{filename}-grid.jpg")
-    seeds_str = [f"`{str(seed)}`" for seed in list_of_seeds]
-    queue.pop(0)
-    user_info = {
-        "username": message.from_user.username,
-        "user_id": message.from_user.id,
-        "job_id": job_id,
-        "orig_prompt": args.prompt,
-        "negative_prompt": args.negative,
-    }
-    inline_keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Upscale an image:", callback_data="_")],
-            [
-                InlineKeyboardButton(
-                    text=str(i + 1),
-                    callback_data=f"UF/{message.from_user.username}/{job_id}/{i}/{message.from_user.id}",
-                )
-                for i in range(len(images_list))
-            ],
-            [InlineKeyboardButton(text="Generate variations:", callback_data="_")],
-            [
-                InlineKeyboardButton(
-                    text=str(i + 1),
-                    callback_data=f"V/{message.from_user.username}/{job_id}/{list_of_seeds[i]}",
-                )
-                for i in range(len(images_list))
-            ],
-            [
-                InlineKeyboardButton(
-                    text="🔄 Regenerate (Count)",
-                    callback_data="_",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text=str(i + 1),
-                    callback_data=f"RG/{message.from_user.username}/{job_id}/{str(i + 1)}",
-                )
-                for i in range(4)
-            ],
+    def _get_data_for_variations_and_regen(self, call):
+        username, image_job_id, seed_or_count = call.data.split("/")[1:]
+        main_folder = f"./output/txt2img/{username}/"
+        for folder in os.listdir(main_folder):
+            if image_job_id in folder:
+                main_folder += f"{folder}/"
+                break
+        with open(f"{main_folder}/gen_info.json") as json_file:
+            payload = json.load(json_file)
+        with open(f"{main_folder}/user_info.json") as json_file:
+            user_gen_info = json.load(json_file)
+        payload.update(
+            {
+                "seed": int(seed_or_count) if self.variations else -1,
+                "batch_size": 4 if self.variations else int(seed_or_count),
+                "subseed_strength": 0.1 if self.variations else 0,
+                "enable_hr": False,
+                "alwayson_scripts": {},
+            }
+        )
+        self.user_info = {
+            "user_id": call.from_user.id,
+            "username": call.from_user.username,
+            "orig_prompt": user_gen_info["orig_prompt"],
+            "negative_prompt": user_gen_info["negative_prompt"],
+            "clean_prompt": utils.clean_prompt(user_gen_info["orig_prompt"]),
+            "seed": seed_or_count if self.variations else None,
+            "orig_image_job_id": image_job_id,
+        }
+        return payload
+
+    def _prepare_data(self, call):
+        if self.variations and call:
+            payload = self._get_data_for_variations_and_regen(call)
+        elif call:
+            payload = self._get_data_for_variations_and_regen(call)
+        else:
+            args = self._get_args_dict(self.message)
+            payload = self._compose_payload_and_user_info(args)
+        return payload
+
+    def _process_images(self, path, response):
+        images_list = []
+        self.user_info["seeds"] = utils.get_json_from_info(response)[
+            "all_subseeds" if self.variations else "all_seeds"
         ]
-    )
+        for index, img_base64 in enumerate(response["images"]):
+            image = Image.open(
+                io.BytesIO(base64.b64decode(img_base64.split(",", 1)[0]))
+            )
+            images_list.append(image)
+            filename = f"{index}-{path.split('/')[-1]}-{self.user_info['seeds'][index]}"
+            png_payload = {"image": f"data:image/png;base64,{img_base64}"}
+            r_info = requests.post(url=f"{SD_URL}/sdapi/v1/png-info", json=png_payload)
+            pnginfo = PngImagePlugin.PngInfo()
+            pnginfo.add_text("parameters", r_info.json().get("info"))
+            image.save(f"{path}/{filename}.png", pnginfo=pnginfo)
+        return images_list
 
-    reply.edit_media(
-        media=InputMediaPhoto(
-            media=f"{path}/{filename}-grid.jpg",
-            caption=f"Prompt: **{args.prompt}**\n"
-            + (f"Negative Prompt: **{args.negative}**\n" if args.negative else "")
-            + f"Seed: {', '.join(seeds_str)}\n"
-            + "\n"
-            + f"**Generated by [@{message.from_user.username}]"
-            + f"(tg://user?id={message.from_user.id})**",
-        ),
-        reply_markup=inline_keyboard,
-    )
-    with open(f"{path}/gen_info.json", "w") as fp:
-        json.dump(payload, fp)
-    with open(f"{path}/user_info.json", "w") as fp:
-        json.dump(user_info, fp)
+    def _present_results(self, path, reply, call=None):
+        caption = (
+            f"Prompt: **{self.user_info['orig_prompt']}**\n"
+            + (
+                f"Negative Prompt: **{self.user_info['negative_prompt']}**\n"
+                if self.user_info["negative_prompt"]
+                else ""
+            )
+            + (
+                f"Seed: `{self.user_info['seed']}`\nSubseeds: {', '.join([f'`{str(seed)}`' for seed in self.user_info['seeds']])}\n\n"
+                if call and self.variations
+                else f"Seeds: {', '.join([f'`{str(seed)}`' for seed in self.user_info['seeds']])}\n\n"
+            )
+            + f"**Generated by [@{self.user_info['username']}]"
+            + f"(tg://user?id={self.user_info['user_id']})**"
+        )
+        media = InputMediaPhoto(
+            media=f"{path}/{self.user_info['clean_prompt']}-{self.job_id}-grid.jpg",
+            caption=caption,
+        )
+        reply_markup = inline_keyboards(self.user_info, self.job_id, self.variations)
+        reply.edit_media(media=media, reply_markup=reply_markup)
+        self.queue.pop(0)
+
+    def process(self, call=None):
+        self.job_id = utils.generate_job_id(16)
+        payload = self._prepare_data(call)
+        reply_message = utils.reply_template(
+            self.job_name, self.queue, self.user_info, self.variations
+        )
+        reply = (
+            call.message.reply_animation(**reply_message)
+            if call
+            else self.message.reply_animation(**reply_message)
+        )
+        utils.add_to_queue(
+            reply,
+            self.queue,
+            self.job_id,
+            self.job_name,
+            self.user_info["orig_prompt"],
+            self.user_info["username"],
+            self.user_info["user_id"],
+        )
+        path = f"./output/txt2img/{self.user_info['username']}/{self.user_info['clean_prompt']}-{self.job_id}"
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        r_gen = requests.post(url=f"{SD_URL}/sdapi/v1/txt2img", json=payload).json()
+
+        images_list = self._process_images(path, r_gen)
+        self.user_info["images_count"] = len(images_list)
+        utils.create_image_grid(images_list).save(
+            f"{path}/{self.user_info['clean_prompt']}-{self.job_id}-grid.jpg"
+        )
+        self._present_results(path, reply, call)
+
+        with open(f"{path}/gen_info.json", "w") as fp:
+            json.dump(payload, fp)
+
+        self.user_info["job_id"] = self.job_id
+        with open(f"{path}/user_info.json", "w") as fp:
+            json.dump(self.user_info, fp)

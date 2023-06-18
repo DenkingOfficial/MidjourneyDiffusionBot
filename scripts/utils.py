@@ -217,6 +217,36 @@ def add_to_queue_outpaint(reply, queue, job_id, message, guide_prompt):
     )
 
 
+def add_to_queue_redraw(reply, queue, job_id, message, prompt):
+    queue.append(job_id)
+    first_string = "Redrawing image\n"
+    last_string = f"by [@{message.from_user.username}]"
+    job_index = queue.index(job_id)
+    while queue[0] != job_id:
+        prev_index = job_index
+        job_index = queue.index(job_id)
+        if prev_index != job_index:
+            try:
+                reply.edit_text(
+                    text=f"{first_string}"
+                    + f"Prompt: **{prompt}**\n\n"
+                    + f"Position in queue: {job_index} (Pending)\n"
+                    + "\n"
+                    + f"{last_string}"
+                    + f"(tg://user?id={message.from_user.id})"
+                )
+            except pyrogram_errors.bad_request_400.MessageNotModified:
+                pass
+    reply.edit_text(
+        text=f"{first_string}"
+        + f"Prompt: **{prompt}**\n\n"
+        + "Position in queue: 0 (Processing)\n"
+        + "\n"
+        + f"{last_string}"
+        + f"(tg://user?id={message.from_user.id})"
+    )
+
+
 def reply_template(
     job_name, queue, user_info, variations=False, regenerate=False, upscale=False
 ):
@@ -242,6 +272,19 @@ def reply_outpaint_template(queue, message, guide_prompt):
     caption = (
         "Outpainting image\n"
         + (f"Guidance prompt: **{guide_prompt}**\n\n" if guide_prompt else "\n")
+        + f"Position in queue: {position} {status}\n"
+        + f"by [@{message.from_user.username}](tg://user?id={message.from_user.id})"
+    )
+    reply = {"animation": "./static/noise.gif", "caption": caption, "quote": True}
+    return reply
+
+
+def reply_redraw_template(queue, message, prompt):
+    position = str(len(queue))
+    status = "(Pending)" if len(queue) > 0 else ""
+    caption = (
+        "Redrawing image\n"
+        + f"Prompt: **{prompt}**\n\n"
         + f"Position in queue: {position} {status}\n"
         + f"by [@{message.from_user.username}](tg://user?id={message.from_user.id})"
     )

@@ -33,7 +33,6 @@ class Txt2Img:
         return SimpleNamespace(**args)
 
     def _compose_payload_and_user_info(self, args):
-        args = self._get_args_dict(self.message)
         args.gen_prompt, args.gen_negative = utils.translate_prompt(args.prompt), (
             utils.translate_prompt(args.negative) if args.negative else None
         )

@@ -1,4 +1,4 @@
-SD_URL = ""
+SD_URL = "http://192.168.0.66:7860"
 
 TXT2IMG_AVAILABLE_ARGS = (
     "prompt",
@@ -20,3 +20,8 @@ ASPECT_RATIO_DICT = {
     "9:16": {"width": 576, "height": 1024},
     "3:4": {"width": 576, "height": 768},
 }
+
+OUTPAINTING_AVAILABLE_ARGS = (
+    "direction",
+    "amount",
+)

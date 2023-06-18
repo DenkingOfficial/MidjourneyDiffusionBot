@@ -131,7 +131,7 @@ def create_image_grid(imgs):
 
 
 def translate_prompt(prompt):
-    if detect(prompt) != 'en':
+    if detect(prompt) != "en":
         return translator.translate(text=prompt, target="en")
     else:
         return prompt
@@ -183,6 +183,40 @@ def add_to_queue(reply, queue, job_id, job_name, prompt, username, user_id):
     )
 
 
+def add_to_queue_outpaint(reply, queue, job_id, message, guide_prompt):
+    queue.append(job_id)
+    first_string = "Outpainting image\n"
+    last_string = f"by [@{message.from_user.username}]"
+    job_index = queue.index(job_id)
+    while queue[0] != job_id:
+        prev_index = job_index
+        job_index = queue.index(job_id)
+        if prev_index != job_index:
+            try:
+                reply.edit_text(
+                    text=f"{first_string}"
+                    + (
+                        f"Guidance prompt: **{guide_prompt}**\n\n"
+                        if guide_prompt
+                        else "\n"
+                    )
+                    + f"Position in queue: {job_index} (Pending)\n"
+                    + "\n"
+                    + f"{last_string}"
+                    + f"(tg://user?id={message.from_user.id})"
+                )
+            except pyrogram_errors.bad_request_400.MessageNotModified:
+                pass
+    reply.edit_text(
+        text=f"{first_string}"
+        + (f"Guidance prompt: **{guide_prompt}**\n\n" if guide_prompt else "\n")
+        + "Position in queue: 0 (Processing)\n"
+        + "\n"
+        + f"{last_string}"
+        + f"(tg://user?id={message.from_user.id})"
+    )
+
+
 def reply_template(
     job_name, queue, user_info, variations=False, regenerate=False, upscale=False
 ):
@@ -198,5 +232,18 @@ def reply_template(
         "caption": caption,
     }
     if not (regenerate and variations and upscale):
-        reply["quote"] = True
+        reply["quote"] = True  # type: ignore
+    return reply
+
+
+def reply_outpaint_template(queue, message, guide_prompt):
+    position = str(len(queue))
+    status = "(Pending)" if len(queue) > 0 else ""
+    caption = (
+        "Outpainting image\n"
+        + (f"Guidance prompt: **{guide_prompt}**\n\n" if guide_prompt else "\n")
+        + f"Position in queue: {position} {status}\n"
+        + f"by [@{message.from_user.username}](tg://user?id={message.from_user.id})"
+    )
+    reply = {"animation": "./static/noise.gif", "caption": caption, "quote": True}
     return reply

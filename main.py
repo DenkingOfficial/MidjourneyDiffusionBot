@@ -5,6 +5,7 @@ from scripts.get_secrets import read_secrets
 import scripts.utils as utils
 from scripts.txt2img import Txt2Img
 from scripts.upscale import Upscale
+from scripts.outpainting import Outpaint
 
 secrets = read_secrets()
 
@@ -36,6 +37,13 @@ def imagine(client, message):
     global queue
     t2i = Txt2Img(queue, message)
     t2i.process()
+
+
+@app.on_message(filters.command(["outpaint"]))
+def outpaint(client, message):
+    global queue
+    outpaint = Outpaint(queue, message)
+    outpaint.process()
 
 
 def variations_process(client: Client, call: CallbackQuery):

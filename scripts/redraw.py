@@ -50,21 +50,25 @@ class Redraw:
         os.remove(image_path)
         self.prompt = prompt
         payload = {
-            "prompt": utils.translate_prompt(prompt) + " <lyco:Mangled_Merge_Lyco:1.0>",
-            "negative_prompt": "nfixer, nartfixer, (deformed, distorted, disfigured:1.3), poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, (mutated hands and fingers:1.4), disconnected limbs, mutation, mutated, ugly, disgusting, blurry",
+            "prompt": utils.translate_prompt(prompt),
+            "negative_prompt": "BadDream, (UnrealisticDream:1.2), (deformed, distorted, disfigured:1.3), poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, (mutated hands and fingers:1.4), disconnected limbs, mutation, mutated, ugly, disgusting, blurry",
             "batch_size": 1,
             "steps": 10,
             "cfg_scale": 7,
             "sampler_index": "DPM++ 2M SDE",
             "width": w,
             "height": h,
+            "override_settings": {
+                "sd_model_checkpoint": "Misc\\dreamshaper_631BakedVae.safetensors [2336dbf342]",
+                "sd_vae": "None",
+            },
             "alwayson_scripts": {
                 "controlnet": {
                     "args": [
                         {
                             "input_image": base64_img,
-                            "module": "canny",
-                            "model": "control_v11p_sd21_canny [4ac9f628]",
+                            "module": "softedge_hed",
+                            "model": "control_v11p_sd15_softedge [a8575a2a]",
                             "weight": 1,
                             "resize_mode": 1,
                             "lowvram": True,

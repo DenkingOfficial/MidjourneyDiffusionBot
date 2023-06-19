@@ -5,7 +5,11 @@ def inline_keyboards(user_info, job_id, variations):
     if variations:
         return InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="Upscale an image:", callback_data="_")],
+                [
+                    InlineKeyboardButton(
+                        text="Увеличить изображение:", callback_data="_"
+                    )
+                ],
                 [
                     InlineKeyboardButton(
                         text=str(i + 1),
@@ -15,7 +19,7 @@ def inline_keyboards(user_info, job_id, variations):
                 ],
                 [
                     InlineKeyboardButton(
-                        text="🔄 Regenerate variations",
+                        text="🔄 Перегенерировать вариации",
                         callback_data=f"V/{user_info['username']}/{user_info['orig_image_job_id']}/{user_info['seed']}",
                     )
                 ],
@@ -24,7 +28,11 @@ def inline_keyboards(user_info, job_id, variations):
     else:
         return InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="Upscale an image:", callback_data="_")],
+                [
+                    InlineKeyboardButton(
+                        text="Увеличить изображение:", callback_data="_"
+                    )
+                ],
                 [
                     InlineKeyboardButton(
                         text=str(i + 1),
@@ -32,7 +40,11 @@ def inline_keyboards(user_info, job_id, variations):
                     )
                     for i in range(user_info["images_count"])
                 ],
-                [InlineKeyboardButton(text="Generate variations:", callback_data="_")],
+                [
+                    InlineKeyboardButton(
+                        text="Сгенерировать вариации:", callback_data="_"
+                    )
+                ],
                 [
                     InlineKeyboardButton(
                         text=str(i + 1),
@@ -42,7 +54,7 @@ def inline_keyboards(user_info, job_id, variations):
                 ],
                 [
                     InlineKeyboardButton(
-                        text="🔄 Regenerate (Count)",
+                        text="🔄 Перегенерировать (кол-во)",
                         callback_data="_",
                     )
                 ],

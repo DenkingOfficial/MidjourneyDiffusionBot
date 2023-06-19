@@ -37,9 +37,19 @@ DEFAULT_VALUES = {
 
 AVAILABLE_ASPECT_RATIO_DICT = ("16:9", "4:3", "1:1", "9:16", "3:4")
 
-AVAILABLE_STYLES_DICT = ("default", "realistic", "art", "pixel-art")
+AVAILABLE_STYLES_DICT = ("default", "realistic", "art")
 
 AVAILABLE_MODELS_DICT = ("illuminati_v1.1", "original_sd_1.5", "original_sd_2.1")
+
+HELP_TEXT = (
+    "Доступные команды:\n"
+    "` ``/imagine`\n"
+    "` ``/outpaint`\n"
+    "` ``/redraw`\n"
+    "\n"
+    "Для получения информации о каждой из команд введите `/help [команда]`\n"
+    "Пример: `/help imagine`\n"
+)
 
 TXT2IMG_HELP_TEXT = (
     "Формат ввода: `/imagine (описание) [--аргумент значение]`\n"

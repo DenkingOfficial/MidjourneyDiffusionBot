@@ -140,13 +140,13 @@ class Outpaint:
         processed_filename = f"{self.message.from_user.username}-{self.job_id}.png"
         file_path = os.path.join(path, processed_filename)
         caption = (
-            "Outpainted image\n"
+            "Дорисованное изображение\n"
             + (
-                f"Guidance prompt: **{self.guide_prompt}**\n"
+                f"Описание дорисовки: **{self.guide_prompt}**\n"
                 if self.guide_prompt
                 else ""
             )
-            + f"\n**Outpainted by [@{self.message.from_user.username}](tg://user?id={self.message.from_user.id})**\n"
+            + f"\n**Дорисовано [@{self.message.from_user.username}](tg://user?id={self.message.from_user.id})**\n"
         )
 
         try:

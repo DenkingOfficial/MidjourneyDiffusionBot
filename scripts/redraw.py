@@ -100,9 +100,9 @@ class Redraw:
         processed_filename = f"{self.message.from_user.username}-{self.job_id}.png"
         file_path = os.path.join(path, processed_filename)
         caption = (
-            "Redrawn image\n"
-            + f"Prompt: **{self.prompt}**\n"
-            + f"\n**Redrawn by [@{self.message.from_user.username}](tg://user?id={self.message.from_user.id})**\n"
+            "Перерисованное изображение\n"
+            + f"Описание: **{self.prompt}**\n"
+            + f"\n**Перерисовано [@{self.message.from_user.username}](tg://user?id={self.message.from_user.id})**\n"
         )
 
         try:

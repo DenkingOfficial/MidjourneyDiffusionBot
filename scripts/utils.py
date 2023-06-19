@@ -7,81 +7,15 @@ from langdetect import detect
 import json
 import random
 import string
+from scripts.consts import (
+    DEFAULT_VALUES,
+    AVAILABLE_STYLES_DICT,
+    AVAILABLE_MODELS_DICT,
+    AVAILABLE_ASPECT_RATIO_DICT,
+    MAX_SEED_VALUE,
+)
 
 translator = YandexFreeTranslate(api="ios")
-MAX_SEED_VALUE = 9999999999999999999
-
-TXT2IMG_AVAILABLE_ARGS = (
-    "prompt",
-    "ar",
-    "count",
-    "model",
-    "seed",
-    "cfg",
-    "facefix",
-    "style",
-    "negative",
-    "hr",
-)
-
-DEFAULT_VALUES = {
-    "ar": "1:1",
-    "count": 4,
-    "model": "illuminati_v1.1",
-    "seed": -1,
-    "cfg": 5.0,
-    "facefix": "0",
-    "style": "default",
-    "negative": "",
-    "hr": "0",
-}
-
-AVAILABLE_ASPECT_RATIO_DICT = ("16:9", "4:3", "1:1", "9:16", "3:4")
-
-AVAILABLE_STYLES_DICT = ("default", "realistic", "art", "pixel-art")
-
-AVAILABLE_MODELS_DICT = ("illuminati_v1.1", "original_sd_1.5", "original_sd_2.1")
-
-HELP_TEXT = (
-    "Format: `/imagine (Your prompt) [--argument value]`\n"
-    "\n"
-    "Available args:\n"
-    "`--ar` — aspect ratio of an image (default: `1:1`)\n"
-    "` ` Available values:\n"
-    "`  ` — `1:1`\n"
-    "`  ` — `16:9` or `9:16`\n"
-    "`  ` — `4:3` or `3:4`\n"
-    "\n"
-    "`--count` — number of images to generate (default: `4`)\n"
-    "` ` Available values:\n"
-    "`  ` — A number in range `1-4`\n"
-    "\n"
-    "`--model` — which model to use (default: `illuminati_v1.1`)\n"
-    "` ` Available values:\n"
-    "`  ` — `illuminati_v1.1` - High quality model trained using "
-    "noise offset, based on SD 2.1\n"
-    "`  ` — `original_sd_2.1` - Original Stable Diffusion 2.1 model\n"
-    "`  ` — `original_sd_1.5` - Original Stable Diffusion 1.5 model\n"
-    "\n"
-    "`--seed` — seed to use (default: `random`)\n"
-    "` ` Available values:\n"
-    "`  ` — A number in range `0-9999999999999999999`\n"
-    "\n"
-    "`--cfg` — how close prompt follows the image (default: `5`)\n"
-    "` ` Available values:\n"
-    "`  ` — A number in range `1-15`\n"
-    "\n"
-    "`--facefix` — fix faces (default: `0`)\n"
-    "` ` Available values:\n"
-    "`  ` — `0` - Turn off\n"
-    "`  ` — `1` - Turn on\n"
-    "\n"
-    "`--style` — style to use\n"
-    "` ` Available values:\n"
-    "`  ` — `realistic` - photorealistic images\n"
-    "`  ` — `art` - digital art\n"
-    "`  ` — `pixel-art` - pixel art images (NOT IMPLEMENTED)"
-)
 
 
 def get_generation_args(command):

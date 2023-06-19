@@ -9,5 +9,3 @@ output/txt2img/*
 **/__pycache__/
 venv/
 backup/
-scripts/consts.py
-scripts/oldoutpainting.py

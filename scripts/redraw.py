@@ -5,7 +5,7 @@ from PIL import Image
 import requests
 from pyrogram import errors as pyrogram_errors
 from pyrogram.types import InputMediaPhoto, InputMediaDocument
-from scripts.consts import SD_URL
+from scripts.consts import SD_URL, REDRAW_HELP_TEXT
 import scripts.utils as utils
 
 
@@ -118,9 +118,7 @@ class Redraw:
         payload = self._redraw_payload_former()
 
         if not payload:
-            self.message.reply(
-                "Please send an image with this command. Also check arguments"
-            )
+            self.message.reply(REDRAW_HELP_TEXT)
             return
 
         reply_message = utils.reply_redraw_template(

@@ -11,12 +11,12 @@ from pyrogram.types import (
     Message,
 )
 from scripts.get_settings import get_settings
-from scripts.consts import SD_URL, TXT2IMG_AVAILABLE_ARGS, ASPECT_RATIO_DICT
+import scripts.consts as consts
 from scripts.inline_keyboards import inline_keyboards
 
 
 class Txt2Img:
-    def __init__(self, queue: list, message: Message = None, variations: bool = False):  # type: ignore
+    def __init__(self, queue: list, message: Message = None, variations: bool = False):
         self.message = message
         self.queue = queue
         self.variations = variations
@@ -27,10 +27,10 @@ class Txt2Img:
     @staticmethod
     def _get_args_dict(message):
         args = utils.get_generation_args(message)
-        if not args or not utils.check_args(args, TXT2IMG_AVAILABLE_ARGS):
-            message.reply_text(utils.HELP_TEXT)
+        if not args or not utils.check_args(args, consts.TXT2IMG_AVAILABLE_ARGS):
+            message.reply_text(consts.TXT2IMG_HELP_TEXT)
             return
-        return SimpleNamespace(**args)  # type: ignore
+        return SimpleNamespace(**args)
 
     def _compose_payload_and_user_info(self, args):
         args.gen_prompt, args.gen_negative = utils.translate_prompt(args.prompt), (
@@ -64,7 +64,7 @@ class Txt2Img:
                 "hr_upscaler": "4x-UltraSharp",
                 "denoising_strength": 0.25,
             }
-            | ASPECT_RATIO_DICT[args.ar]
+            | consts.ASPECT_RATIO_DICT[args.ar]
             | override_payload
             | alwayson_payload
         )
@@ -132,7 +132,9 @@ class Txt2Img:
             images_list.append(image)
             filename = f"{index}-{path.split('/')[-1]}-{self.user_info['seeds'][index]}"
             png_payload = {"image": f"data:image/png;base64,{img_base64}"}
-            r_info = requests.post(url=f"{SD_URL}/sdapi/v1/png-info", json=png_payload)
+            r_info = requests.post(
+                url=f"{consts.SD_URL}/sdapi/v1/png-info", json=png_payload
+            )
             pnginfo = PngImagePlugin.PngInfo()
             pnginfo.add_text("parameters", r_info.json().get("info"))
             image.save(f"{path}/{filename}.png", pnginfo=pnginfo)
@@ -171,7 +173,7 @@ class Txt2Img:
         reply = (
             call.message.reply_animation(**reply_message)
             if call
-            else self.message.reply_animation(**reply_message)  # type: ignore
+            else self.message.reply_animation(**reply_message)
         )
         utils.add_to_queue(
             reply,
@@ -187,7 +189,9 @@ class Txt2Img:
         if not os.path.exists(path):
             os.makedirs(path)
 
-        r_gen = requests.post(url=f"{SD_URL}/sdapi/v1/txt2img", json=payload).json()
+        r_gen = requests.post(
+            url=f"{consts.SD_URL}/sdapi/v1/txt2img", json=payload
+        ).json()
 
         images_list = self._process_images(path, r_gen)
         self.user_info["images_count"] = len(images_list)

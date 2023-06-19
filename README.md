@@ -4,7 +4,7 @@
 
 Telegram бот, который позволяет генерировать изображения по описанию (совсем как Midjourney).
 
-![Bot UI](/static/bot-ui.png)
+![Bot UI](/static/bot-ui.jpg)
 
 Он использует локальный или удаленный сервер со [Stable Diffusion WebUI](https://github.com/DenkingOfficial/pure-sd-webui), руководство по установке в репозитории. Бот полностью мультиязычный ~~(Скажи ДА промптам на казахском)~~. На выбор пользователя доступны три модели, генерирующие различные результаты:
 
@@ -25,7 +25,7 @@ Telegram бот, который позволяет генерировать из
 
 Также пользователь может перегенирировать изображения (если они ему не понравились), сгенерировать вариации или увеличить разрешение в Inline-клавиатуре под ответом бота:
 
-![Inline Keyboard](/static/inline-keyboard.png)
+![Inline Keyboard](/static/inline-keyboard.jpg)
 
 ## Зависимости
 
@@ -50,11 +50,11 @@ Telegram бот, который позволяет генерировать из
 + Поставить разработанное [расширение](https://github.com/DenkingOfficial/sd-telegram-bot-extension) для Stable Diffusion WebUI
 + Настроить данные для доступа к боту в настройках WebUI и применить изменения
 
-![WebUI Settings](/static/webui-extension.png)
+![WebUI Settings](/static/webui-extension.jpg)
 
 + Перейти на вкладку Telegram Bot и нажать на кнопку `Start Telegram Bot`
 
-![WebUI Bot Tab](/static/webui-bot-tab.png)
+![WebUI Bot Tab](/static/webui-bot-tab.jpg)
 
 ИЛИ
 

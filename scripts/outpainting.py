@@ -26,7 +26,7 @@ class Outpaint:
     @staticmethod
     def parse_message_text(text):
         # Define flag patterns
-        command_pattern = r"/outpaint"
+        command_pattern = r"/outpaint(?:@\w+_bot)?"
         dir_pattern = r"(--|—)direction\s+(\w+)"
         amount_pattern = r"(--|—)amount\s+(\d+)"
         guide_pattern = r"(--|—)guide((?:(?!--|—).)*)"

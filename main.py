@@ -1,4 +1,5 @@
-from pyrogram import Client, filters
+from pyrogram import filters
+from pyrogram.client import Client
 from pyrogram.types import CallbackQuery
 from pyrogram.handlers.callback_query_handler import CallbackQueryHandler
 from scripts.get_secrets import read_secrets
@@ -55,21 +56,21 @@ def redraw(client, message):
 
 
 def variations_process(client: Client, call: CallbackQuery):
-    client.answer_callback_query(call.id)
+    client.answer_callback_query(call.id)  # type: ignore
     global queue
     var = Txt2Img(queue, variations=True)
     var.process(call=call)
 
 
 def regenerate_process(client: Client, call: CallbackQuery):
-    client.answer_callback_query(call.id)
+    client.answer_callback_query(call.id)  # type: ignore
     global queue
     regen = Txt2Img(queue)
     regen.process(call=call)
 
 
 def upscale_fast_process(client: Client, call: CallbackQuery):
-    client.answer_callback_query(call.id)
+    client.answer_callback_query(call.id)  # type: ignore
     global queue
     ups = Upscale(queue)
     ups.process(call=call)

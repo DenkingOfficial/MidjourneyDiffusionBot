@@ -2,7 +2,10 @@ secrets.json
 *.session-journal
 *.session
 *.journal
-output/
+output/*
+!output/txt2img
+output/txt2img/*
+!output/txt2img/Test
 **/__pycache__/
 venv/
 backup/

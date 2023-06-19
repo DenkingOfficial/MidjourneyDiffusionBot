@@ -1,0 +1,10 @@
+{
+    "user_id": 1,
+    "username": "Test",
+    "orig_prompt": "a beautiful picture",
+    "negative_prompt": "",
+    "clean_prompt": "a beautiful picture",
+    "seeds": [123],
+    "images_count": 1,
+    "job_id": "1234567812345678"
+}

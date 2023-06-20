@@ -74,5 +74,5 @@ Telegram бот, который позволяет генерировать из
 
 - [Шершнев Андрей](https://github.com/DenkingOfficial), РИМ-120907
 - [Касов Артем](https://github.com/A-Kasov), РИМ-120906
-- [Мирвода Артем](https://github.com/Roccowen), РИМ-120907 
+- [Мирвода Артем](https://github.com/Roccowen)(†), РИМ-120907 
 - [Иванов Сергей](https://github.com/rancelyndar), РИМ-120906

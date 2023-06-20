@@ -9,3 +9,4 @@ output/txt2img/*
 **/__pycache__/
 venv/
 backup/
+downloads/
